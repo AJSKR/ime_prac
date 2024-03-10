@@ -14,8 +14,8 @@
         tools:targetApi="31">
 
         <!-- Declares the input method service -->
-        <service android:name="FastInputIME"
-            android:label="@string/fast_input_label"
+        <service android:name="SimpleFewIME"
+            android:label="@string/simplefew_input_label"
             android:permission="android.permission.BIND_INPUT_METHOD"
             android:exported="true">
             <intent-filter>
