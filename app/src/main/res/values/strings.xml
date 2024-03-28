@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">ime_prac</string>
     <string name="simplefew_input_label">Simple Few IME</string>
+    <string name="korean">한국어</string>
+    <string name="numpad">넘패드</string>
+    <string name="special">특문이</string>
+    <string name="qwerty">쿼티</string>
 </resources>
