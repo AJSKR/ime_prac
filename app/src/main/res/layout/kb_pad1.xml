@@ -9,7 +9,7 @@
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_weight="1.2"
+        android:layout_weight="1"
         android:layout_height="match_parent"
         android:paddingEnd="5dp"
         android:orientation="vertical">
@@ -174,7 +174,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2A"
-                android:text="q"
+                android:text="`"
                 android:textAllCaps="false" />
 
             <Button
@@ -183,7 +183,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2B"
-                android:text="w"
+                android:text="~"
                 android:textAllCaps="false" />
 
             <Button
@@ -192,7 +192,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2C"
-                android:text="e"
+                android:text="\@"
                 android:textAllCaps="false" />
 
             <Button
@@ -201,7 +201,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2D"
-                android:text="r"
+                android:text="#"
                 android:textAllCaps="false" />
 
             <Button
@@ -210,7 +210,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2E"
-                android:text="t"
+                android:text="$"
                 android:textAllCaps="false" />
 
             <Button
@@ -219,7 +219,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2F"
-                android:text="y"
+                android:text="%"
                 android:textAllCaps="false" />
 
             <Button
@@ -228,7 +228,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2G"
-                android:text="u"
+                android:text="^"
                 android:textAllCaps="false" />
 
             <Button
@@ -237,7 +237,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2H"
-                android:text="i"
+                android:text="&amp;"
                 android:textAllCaps="false" />
 
             <Button
@@ -246,7 +246,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2I"
-                android:text="o"
+                android:text="("
                 android:textAllCaps="false" />
 
             <Button
@@ -255,7 +255,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="2J"
-                android:text="p"
+                android:text=")"
                 android:textAllCaps="false" />
 
         </LinearLayout>
@@ -266,22 +266,12 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/ctl"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:padding="1dp"
-                android:tag="ctl"
-                android:text="c"
-                android:textAllCaps="false" />
-
-            <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3A"
-                android:text="a"
+                android:text="\"
                 android:textAllCaps="false" />
 
             <Button
@@ -290,7 +280,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3B"
-                android:text="s"
+                android:text="="
                 android:textAllCaps="false" />
 
             <Button
@@ -299,7 +289,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3C"
-                android:text="d"
+                android:text="/"
                 android:textAllCaps="false" />
 
             <Button
@@ -308,7 +298,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3D"
-                android:text="f"
+                android:text="÷"
                 android:textAllCaps="false" />
 
             <Button
@@ -317,7 +307,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3E"
-                android:text="g"
+                android:text="*"
                 android:textAllCaps="false" />
 
             <Button
@@ -326,7 +316,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3F"
-                android:text="h"
+                android:text="+"
                 android:textAllCaps="false" />
 
             <Button
@@ -335,7 +325,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3G"
-                android:text="j"
+                android:text="-"
                 android:textAllCaps="false" />
 
             <Button
@@ -344,7 +334,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3H"
-                android:text="k"
+                android:text="_"
                 android:textAllCaps="false" />
 
             <Button
@@ -353,18 +343,17 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="3I"
-                android:text="l"
+                android:text="{"
                 android:textAllCaps="false"
                 tools:ignore="SpUsage" />
 
             <Button
-                android:id="@+id/enter"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.5"
+                android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="ent"
-                android:text="⏎"
+                android:text="}"
                 android:textAllCaps="false" />
 
         </LinearLayout>
@@ -375,13 +364,13 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/shift"
+                android:id="@+id/sh"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.5"
+                android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="shf"
-                android:text="shift"
+                android:text="•"
                 android:textAllCaps="false" />
 
             <Button
@@ -390,7 +379,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4A"
-                android:text="z"
+                android:text="|"
                 android:textAllCaps="false" />
 
             <Button
@@ -399,7 +388,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4B"
-                android:text="x"
+                android:text=":"
                 android:textAllCaps="false" />
 
             <Button
@@ -408,7 +397,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4C"
-                android:text="c"
+                android:text=";"
                 android:textAllCaps="false" />
 
             <Button
@@ -417,7 +406,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4D"
-                android:text="v"
+                android:text="'"
                 android:textAllCaps="false" />
 
             <Button
@@ -426,7 +415,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4E"
-                android:text="b"
+                android:text="&quot;"
                 android:textAllCaps="false" />
 
             <Button
@@ -435,7 +424,7 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4F"
-                android:text="n"
+                android:text="&lt;"
                 android:textAllCaps="false" />
 
             <Button
@@ -444,25 +433,25 @@
                 android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4G"
-                android:text="m"
+                android:text="&gt;"
                 android:textAllCaps="false" />
 
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.8"
+                android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4I"
-                android:text=",,"
+                android:text="["
                 android:textAllCaps="false" />
 
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.7"
+                android:layout_weight="1"
                 android:padding="1dp"
                 android:tag="4H"
-                android:text="\?/"
+                android:text="]"
                 android:textAllCaps="false" />
 
         </LinearLayout>
@@ -473,13 +462,23 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/delete"
+                android:id="@+id/copy"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:padding="1dp"
-                android:tag="del"
-                android:text="⌦"
+                android:tag="sym"
+                android:text="복"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/paste"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="1dp"
+                android:tag="tog"
+                android:text="붙"
                 android:textAllCaps="false" />
 
             <Button
@@ -503,7 +502,7 @@
                 android:textAllCaps="false" />
 
             <Button
-                android:id="@+id/space"
+                android:id="@+id/spa"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="4"
@@ -513,23 +512,13 @@
                 android:textAllCaps="false" />
 
             <Button
-                android:id="@+id/copy"
+                android:id="@+id/delete"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:padding="1dp"
-                android:tag="sym"
-                android:text="복"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/paste"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:padding="1dp"
-                android:tag="tog"
-                android:text="붙"
+                android:tag="del"
+                android:text="⌦"
                 android:textAllCaps="false" />
 
             <ImageButton

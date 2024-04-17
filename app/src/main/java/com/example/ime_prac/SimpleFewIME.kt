@@ -4,6 +4,7 @@ import android.content.Context
 import android.inputmethodservice.InputMethodService
 import android.os.IBinder
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -13,6 +14,33 @@ import android.widget.FrameLayout
 import androidx.core.view.allViews
 
 class SimpleFewIME : InputMethodService() {
+    private var currText = ""
+
+    private val spinJaum: Map<String, List<String>>
+    private val lookUpSpinJaum: Map<String, String>
+
+    private var shiftState = ShiftState.NONE
+
+    init {
+        spinJaum = mapOf(
+            "ㄱ" to listOf("ㄱ", "ㅋ", "ㄲ")
+        )
+        lookUpSpinJaum = mapOf(
+            "ㄱ" to "ㄱ",
+            "ㅋ" to "ㄱ",
+            "ㄲ" to "ㄱ"
+        )
+    }
+
+    private fun CharSequence.isJaum(): Boolean = toString().let {
+        Log.d("!!!!", "this: $this")
+        Log.d("!!!!", "result: ${it >= "ㄱ" && it <= "ㅎ"}")
+        it >= "ㄱ" && it <= "ㅎ"
+    }
+
+    private fun CharSequence.isAlphaNumeric(): Boolean = toString().let {
+        ("A" <= it && it <= "Z") || ("a" <= it && it <= "z") || ("0" <= it && it <= "9")
+    }
 
     override fun onCreateInputView(): View {
         Log.d("!!!!", "onCreateInputView")
@@ -27,45 +55,181 @@ class SimpleFewIME : InputMethodService() {
 
         // #2 apply나 also를 쓰는 것. -> 채택
         return FrameLayout(this@SimpleFewIME).also {
-            setupCjk(it)
+//            setupSehum(it)
+            setupQwerty(it)
         }
     }
 
-    private fun setupQwerty(root: FrameLayout) {
+    private fun setupQwerty(root: FrameLayout, shiftState: ShiftState = ShiftState.NONE) {
         root.removeAllViews()
-        layoutInflater.inflate(R.layout.kb_qwerty, root).apply {
-            findViewById<Button>(R.id.switch_eng).setOnClickListener {
-                setupCjk(root)
-            }
+        val layoutId = when (shiftState) {
+            ShiftState.NONE -> R.layout.kb_qwerty
+            else -> R.layout.kb_qwerty//_u
         }
-    }
-
-    private fun setupCjk(root: FrameLayout) {
-        root.removeAllViews()
-        layoutInflater.inflate(R.layout.keyboard, root).apply {
-            var a = ""
-            val onAlphanumClick: (View) -> Unit = {
+        layoutInflater.inflate(layoutId, root).apply {
+            val onEngClick: (View) -> Unit = {
                 (it as Button).let { button ->
                     currentInputConnection.apply {
-    //                        commitText(button.text, 1)
-                        a += (button.text.toString())
-                        Log.d("!!!!", "text: $a")
-                        setComposingText(a, 1)
+                        //                        commitText(button.text, 1)
+                        val pressedKey = button.text
+                        when {
+                            pressedKey.isAlphaNumeric() -> {
+//                                currText += pressedKey
+//                                currText += (pressedKey.toString())
+                                when (shiftState) {
+                                    ShiftState.NONE -> commitText(pressedKey, 1)
+                                    ShiftState.CAPSLOCK -> {
+//                                        val upperCase = pressedKey.toString().uppercase()
+                                        commitText(pressedKey, 1)
+                                    }
+
+                                    ShiftState.OT_SHIFT -> {
+//                                        val upperCase = pressedKey.toString().uppercase()
+                                        commitText(pressedKey, 1)
+                                        this@SimpleFewIME.shiftState = ShiftState.NONE
+                                        setupQwerty(root, this@SimpleFewIME.shiftState)
+                                    }
+                                }
+                            }
+                        }
+//                        setComposingText(currText, 1)
                     }
                 }
+            } //onKorClick
+            findViewById<Button>(R.id.switch_kor).setOnClickListener {
+                setupSehum(root)
             }
+            val excludedIds = setOf(
+                R.id.switch_kor, R.id.switch_sym, R.id.shift, R.id.backspace, R.id.delete,
+                R.id.space,
+            )
+            allViews.forEach {
+                Log.d("!!!!", "$it")
+                if (it is Button && !excludedIds.contains(it.id)) {
+                    it.setOnClickListener(onEngClick)
+                }
+
+            }
+
+            val specialKeyHandler: (Int) -> Unit = {
+                currentInputConnection.setComposingText(currText, 1)
+                currText = ""
+                keyDownUp(it)
+            }
+
+            findViewById<Button>(R.id.space).setOnClickListener {
+                specialKeyHandler(KeyEvent.KEYCODE_SPACE)
+            }
+
+            findViewById<Button>(R.id.delete).setOnClickListener {
+                specialKeyHandler(KeyEvent.KEYCODE_FORWARD_DEL)
+            }
+
+            findViewById<Button>(R.id.tab).setOnClickListener {
+                specialKeyHandler(KeyEvent.KEYCODE_TAB)
+            }
+
+            findViewById<Button>(R.id.backspace).setOnClickListener {
+                val currTextLen = currText.length
+                Log.d("!!!!", "currTextLen: $currTextLen")
+                when {
+                    currTextLen > 1 -> {
+                        currText = currText.dropLast(1)
+                        currentInputConnection.setComposingText(currText, 1)
+                    }
+
+                    currTextLen > 0 -> {
+                        currText = ""
+                        currentInputConnection.commitText("", 0)
+                    }
+                    else -> keyDownUp(KeyEvent.KEYCODE_DEL)
+                }
+            }
+            findViewById<Button>(R.id.shift).apply {
+                when (shiftState) {
+                    ShiftState.NONE -> null
+                    ShiftState.OT_SHIFT -> 0xFF0000FF
+                    ShiftState.CAPSLOCK -> 0xFF00FF00
+                }?.let {
+                    setTextColor(it.toInt())
+//                    setBackgroundColor(it.toInt())
+                }
+
+                setOnClickListener {
+                    this@SimpleFewIME.shiftState = when (shiftState) {
+                        ShiftState.NONE -> ShiftState.OT_SHIFT
+                        ShiftState.OT_SHIFT -> ShiftState.CAPSLOCK
+                        ShiftState.CAPSLOCK -> ShiftState.NONE
+                    }
+                    setupQwerty(root, this@SimpleFewIME.shiftState)
+                }
+            }
+        }
+    }
+
+    private fun keyDownUp(targetKey: Int) {
+        currentInputConnection.apply {
+            sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, targetKey))
+            sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, targetKey))
+        }
+    }
+
+    private fun setupSehum(root: FrameLayout) {
+        root.removeAllViews()
+        layoutInflater.inflate(R.layout.kb_sehum, root).apply {
+            val onKorClick: (View) -> Unit = {
+                (it as Button).let { button ->
+                    currentInputConnection.apply {
+                        //                        commitText(button.text, 1)
+                        val pressedKey = button.text
+                        Log.d("!!!!", "pressedKey: $pressedKey")
+                        Log.d("!!!!", "isJaum: ${pressedKey.isJaum()}")
+                        when {
+                            pressedKey.isJaum() -> {
+                                val lastChar = currText.lastOrNull()
+                                Log.d("!!!!", "lastChar: $lastChar")
+
+                                if (lastChar == null) {
+                                    currText += pressedKey
+                                    setComposingText(currText, 1)
+                                } else {
+                                    R.id.backspace
+                                    if (lastChar.toString() in lookUpSpinJaum) {
+                                        val left = currText.dropLast(1)
+                                        val list = lookUpSpinJaum[lastChar.toString()]!!
+                                        val index = (list.indexOf(lastChar) + 1) % list.length
+                                        val spinJaum = list[index]
+                                        Log.d("!!!!", "$left $index $spinJaum")
+                                        currText = left + spinJaum
+                                        Log.d("!!!!", "currtext: $currText")
+                                        setComposingText(currText, 1)
+                                    } else {
+                                        currText += pressedKey
+                                        setComposingText(currText, 1)
+                                    }
+                                }
+//                                commitText(pressedKey, 1)
+                                spinJaum
+                                currText += (pressedKey.toString())
+                            }
+                        }
+                        Log.d("!!!!", "text: $currText")
+                        setComposingText(currText, 1)
+                    }
+                }
+            } //onKorClick
 
             val excludedIds = setOf(R.id.switch_eng, R.id.switch_sym, R.id.backspace)
             allViews.forEach {
                 Log.d("!!!!", "$it")
                 if (it is Button && !excludedIds.contains(it.id)) {
-                    it.setOnClickListener(onAlphanumClick)
+                    it.setOnClickListener(onKorClick)
                 }
 //                else if (it.tag == "1A") {
 //                    it.setOnClickListener {
-    //                        val intent = Intent(this@SimpleFewIME, SettingsActivity::class.java).apply {
-    //                            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-    //                        }
+                //                        val intent = Intent(this@SimpleFewIME, SettingsActivity::class.java).apply {
+                //                            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                //                        }
 //                        val intent = Intent().apply {
 //                            action = Intent.ACTION_MAIN
 //                            addCategory(Intent.CATEGORY_LAUNCHER)
@@ -82,13 +246,31 @@ class SimpleFewIME : InputMethodService() {
                 setupQwerty(root)
 //                switchToNextInputMethod(true)
 
-    //                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    //                inputMethodManager.switchToNextInputMethod(token, false)
+                //                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                //                inputMethodManager.switchToNextInputMethod(token, false)
             }
             findViewById<Button>(R.id.backspace).setOnClickListener {
-                a = a.dropLast(1)
-                currentInputConnection.apply {
-                    setComposingText(a, 1)
+                // composing text
+                val currTextLen = currText.length
+                Log.d("!!!!", "currTextLen: $currTextLen")
+                when {
+                    currTextLen > 1 -> {
+                        currText = currText.dropLast(1)
+                        currentInputConnection.setComposingText(currText, 1)
+                    }
+
+                    currTextLen > 0 -> {
+                        currText = ""
+                        currentInputConnection.commitText("", 0)
+                    }
+
+                    else -> {
+                        currentInputConnection.apply {
+                            Log.d("!!!!", "enter keyDownUp")
+                            sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+                            sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+                        }
+                    }
                 }
             }
         }
@@ -102,10 +284,13 @@ class SimpleFewIME : InputMethodService() {
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
 
+        currText = ""
+
         Log.d("!!!!", "onStartInput")
         Log.d("!!!!", "" + attribute?.inputType)
 
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         Log.d("!!!!", "mode: ${inputMethodManager.currentInputMethodSubtype?.mode}")
         Log.d("!!!!", "lanTag: ${inputMethodManager.currentInputMethodSubtype?.languageTag}")
 
@@ -130,7 +315,8 @@ class SimpleFewIME : InputMethodService() {
         Log.d("!!!!", "onStartInputView")
         Log.d("!!!!", "" + editorInfo?.inputType)
 
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         Log.d("!!!!", "mode: ${inputMethodManager.currentInputMethodSubtype?.mode}")
         Log.d("!!!!", "lanTag: ${inputMethodManager.currentInputMethodSubtype?.languageTag}")
     }
@@ -152,4 +338,10 @@ class SimpleFewIME : InputMethodService() {
         Log.d("!!!!", "" + newSubtype?.mode)
         Log.d("!!!!", "" + newSubtype?.toString())
     }
+}
+
+enum class ShiftState {
+    NONE,
+    OT_SHIFT,
+    CAPSLOCK
 }
