@@ -33,8 +33,7 @@ class SimpleFewIME : InputMethodService() {
     }
 
     private fun CharSequence.isJaum(): Boolean = toString().let {
-        Log.d("!!!!", "this: $this")
-        Log.d("!!!!", "result: ${it >= "ㄱ" && it <= "ㅎ"}")
+        // "ㄱㄴㄷㄹㅁㅂㅅㅇㅊㅋㅌㅍㅎㅃㅉㄸㄲㅆ"
         it >= "ㄱ" && it <= "ㅎ"
     }
 
@@ -42,9 +41,13 @@ class SimpleFewIME : InputMethodService() {
         ("A" <= it && it <= "Z") || ("a" <= it && it <= "z") || ("0" <= it && it <= "9")
     }
 
+    private fun CharSequence.isAlphabet(): Boolean = toString().let {
+        ("A" <= it && it <= "Z") || ("a" <= it && it <= "z")
+    }
+
     override fun onCreateInputView(): View {
         Log.d("!!!!", "onCreateInputView")
-        // 처음에 자동 작성된 코드는 그대로 리턴.
+        // 처음 자동 작성된 코드: 그대로 리턴.
 //        return layoutInflater.inflate(R.layout.keyboard, null)
 
         // #1 변수에 담기
@@ -60,12 +63,9 @@ class SimpleFewIME : InputMethodService() {
         }
     }
 
-    private fun setupQwerty(root: FrameLayout, shiftState: ShiftState = ShiftState.NONE) {
+    private fun setupQwerty(root: FrameLayout) {
         root.removeAllViews()
-        val layoutId = when (shiftState) {
-            ShiftState.NONE -> R.layout.kb_qwerty
-            else -> R.layout.kb_qwerty//_u
-        }
+        val layoutId = R.layout.kb_qwerty
         layoutInflater.inflate(layoutId, root).apply {
             val onEngClick: (View) -> Unit = {
                 (it as Button).let { button ->
@@ -79,15 +79,13 @@ class SimpleFewIME : InputMethodService() {
                                 when (shiftState) {
                                     ShiftState.NONE -> commitText(pressedKey, 1)
                                     ShiftState.CAPSLOCK -> {
-//                                        val upperCase = pressedKey.toString().uppercase()
                                         commitText(pressedKey, 1)
                                     }
 
                                     ShiftState.OT_SHIFT -> {
-//                                        val upperCase = pressedKey.toString().uppercase()
                                         commitText(pressedKey, 1)
-                                        this@SimpleFewIME.shiftState = ShiftState.NONE
-                                        setupQwerty(root, this@SimpleFewIME.shiftState)
+                                        shiftState = ShiftState.NONE
+                                        invalidateQuertyLayout(root)
                                     }
                                 }
                             }
@@ -142,26 +140,58 @@ class SimpleFewIME : InputMethodService() {
                         currText = ""
                         currentInputConnection.commitText("", 0)
                     }
+
                     else -> keyDownUp(KeyEvent.KEYCODE_DEL)
                 }
             }
             findViewById<Button>(R.id.shift).apply {
                 when (shiftState) {
                     ShiftState.NONE -> null
-                    ShiftState.OT_SHIFT -> 0xFF0000FF
-                    ShiftState.CAPSLOCK -> 0xFF00FF00
+                    ShiftState.OT_SHIFT -> 0xFF00FF00
+                    ShiftState.CAPSLOCK -> 0xFFFF0000
                 }?.let {
                     setTextColor(it.toInt())
 //                    setBackgroundColor(it.toInt())
+                    // TODO: 버튼 틴트를 처리해야 함.
                 }
 
                 setOnClickListener {
-                    this@SimpleFewIME.shiftState = when (shiftState) {
+                    shiftState = when (shiftState) {
                         ShiftState.NONE -> ShiftState.OT_SHIFT
                         ShiftState.OT_SHIFT -> ShiftState.CAPSLOCK
                         ShiftState.CAPSLOCK -> ShiftState.NONE
                     }
-                    setupQwerty(root, this@SimpleFewIME.shiftState)
+                    invalidateQuertyLayout(root)
+                }
+            }
+        }
+    }
+
+    private fun invalidateQuertyLayout(root: FrameLayout) {
+        root.allViews.forEach { it ->
+            Log.d(TAG, "${(it as? Button)?.text} $shiftState")
+            when {
+                it is Button && it.text.length == 1 && it.text.isAlphabet() -> {
+                    val charOnKey = it.text.toString()
+                    it.text = if (shiftState == ShiftState.NONE) {
+                        charOnKey.lowercase()
+                    } else {
+                        charOnKey.uppercase()
+                    }
+                    Log.d("!!!!", "${it.text}")
+                }
+                it.id == R.id.shift -> {
+                    (it as Button).apply {
+                        when (shiftState) {
+                            ShiftState.NONE -> 0xFF000000
+                            ShiftState.OT_SHIFT -> 0xFF00FF00
+                            ShiftState.CAPSLOCK -> 0xFFFF0000
+                        }.let {
+                            setTextColor(it.toInt())
+                            //                    setBackgroundColor(it.toInt())
+                            // TODO: 버튼 틴트를 처리해야 함.
+                        }
+                    }
                 }
             }
         }
@@ -333,10 +363,14 @@ class SimpleFewIME : InputMethodService() {
 
     override fun onCurrentInputMethodSubtypeChanged(newSubtype: InputMethodSubtype?) {
         super.onCurrentInputMethodSubtypeChanged(newSubtype)
-        Log.d("!!!!", "onCurrentInputMethodSubtypeChanged")
-        Log.d("!!!!", "" + newSubtype?.languageTag)
-        Log.d("!!!!", "" + newSubtype?.mode)
-        Log.d("!!!!", "" + newSubtype?.toString())
+        Log.d(TAG, "onCurrentInputMethodSubtypeChanged")
+        Log.d(TAG, "" + newSubtype?.languageTag)
+        Log.d(TAG, "" + newSubtype?.mode)
+        Log.d(TAG, "" + newSubtype?.toString())
+    }
+
+    companion object {
+        val TAG = SimpleFewIME::class.simpleName
     }
 }
 
